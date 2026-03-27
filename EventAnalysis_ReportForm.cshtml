@@ -1,0 +1,591 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <script src="@Url.Content("~/Admin/plugins/jquery/jquery.min.js")"></script>
+<script src="@Url.Content("~/Admin/plugins/bootstrap/js/bootstrap.bundle.min.js")"></script>
+
+<script src="@Url.Content("~/Admin/JS_Lib/leaflet.js")"></script>
+<script src="@Url.Content("~/Admin/JS_Lib/leaflet.polylineDecorator.min.js")"></script>
+<script src="@Url.Content("~/Admin/JS_Lib/jquery.inputmask.js")"></script>
+<script type="text/javascript" src="@Url.Content("~/Admin/JS_Lib/tabulator.js")"></script>
+
+    <!-- html2canvas: 화면을 캡처해서 캔버스로 만들기 -->
+   <script type="text/javascript" src="@Url.Content("~/Admin/JS_Lib/html2canvas.js")"></script>
+
+    <!-- jsPDF: 캔버스를 PDF로 저장 -->
+  <script type="text/javascript" src="@Url.Content("~/Admin/JS_Lib/jspdf.js")"></script>
+  <script src="@Url.Content("~/Admin/JS/EventAnalysis_ReportForm.js")"></script>
+
+    <link href="@Url.Content("~/Admin/dist/css/adminlte.min.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Admin/plugins/fontawesome-free/css/all.min.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Admin/CSS/MainIndex.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Admin/CSS/EventAnalysis_ReportForm.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Admin/plugins/overlayScrollbars/css/OverlayScrollbars.min.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Admin/CSS_Lib/tabulator_site.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Admin/CSS_Lib/MaterialIcons/GoogleMaterial.css")" rel="stylesheet" type="text/css" />
+   <link rel="stylesheet" href="@Url.Content("~/Admin/CSS_Lib/leaflet.css")" />
+
+    <meta name="viewport" content="width=device-width" />
+    <title id="DS EQMS"></title>
+
+</head>
+
+<body style="background: #fff; height: auto; font-family: 'Batang', '바탕', serif !important;">
+    <form id="form1" runat="server">
+        <div class="content">
+            <div class="container-fluid fluid-padding" style="padding: 1rem;">
+                <div class="row">
+                    <div class="col-md-12 col-12" style="padding: 0 0.3rem;">
+                        <div class="card" style="margin-bottom: 0; box-shadow: none;">
+                            <div class="card-body card-body-style" style="height: auto !important; padding-bottom: .6rem; background: #fff; border: none;">
+                                @*    <div class="searchBody-appsize" style="margin-bottom: .5rem;">
+                                    <button id="Btn_RecorderSave" type="button" class="btn btn-block myBtn-green-v1 btn-sm" style="margin-right: 5px; width: 70px; height: 25px;" onclick="Recorder_Save_Button()">저장</button>
+                                    <button id="Btn_RecorderDelete" type="button" class="btn btn-block myBtn-red-v1 btn-sm" style="margin-right: 5px; width: 70px; height: 25px;" onclick="Recorder_Delete_Button()">삭제</button>
+                                </div> *@
+                                <div class="title-component section-header" style="display: flex; align-items: center;">
+                                    @*        <span class="material-symbols-outlined title-symbols-background">
+                                        radio_button_checked
+                                    </span>
+                                    <span class="section-header-label">지진이벤트 정보</span> *@
+                                    <button type="button" id="" class="btn btn-block myBtn-red-v1 btn-sm" style="margin-left:auto; width: 100px; height: 23px; font-size: .7rem; line-height: 1; border-color: #395afd;" onclick="CopyTitle_Button()">제목 복사</button>
+                                    <button type="button" id="" class="btn btn-block myBtn-red-v1 btn-sm" style="margin-left:7px; width: 100px; height: 23px; font-size: .7rem; line-height: 1;" onclick="PDFDownload_Button()">PDF 저장</button>
+                                    <button type="button" id="" class="btn btn-block myBtn-green-v1 btn-sm" style="margin-left:7px; width: 100px; height: 23px; font-size: .7rem; line-height: 1;" onclick="Copy_Button()">클립보드 복사</button>
+                                </div>
+                                <div class="card" style="margin-bottom: 15px;">
+                                    <div class="card-body card-body-style" style="padding: 0.3rem; height: auto; box-shadow: none; border: 1px solid #d1d1d1; background: #fff;">
+                                        <div id="ReportContainer">
+                                            <div id="event-report-container">
+                                                <div id="ReportPage1">
+                                                    <!-- 🔹 보고서 제목 영역 -->
+                                                    <div id="ReportTitle" style="text-align:center; padding: 16px 8px 12px; color: #111;">
+                                                        <div id="ReportLoc" style="font-size: 24px; font-weight: 600; margin-bottom: 6px; text-decoration: underline; line-height: 2;">
+                                                            @* 일본 아오모리현 아오모리시 동쪽 191km 해역 *@
+                                                        </div>
+                                                        <div id="ReportMag" style="font-size: 24px; font-weight: 600; text-decoration: underline;">
+                                                            @* 규모 6.5 지진발생 *@
+                                                        </div>
+                                                    </div>
+                                                    <div id="ReportSummaryWrap" style="margin: 18px 24px 10px; color:#111;">
+                                                        <div class="report-bracket-lr" style="position: relative; padding: 14px 26px 16px;">
+                                                            <div style="font-size: 20px; line-height: 1.9;">
+
+                                                                <!-- ✅ 1줄 박스 -->
+                                                                <div class="editable-dash block"
+                                                                     id="ReportSummary_Line1"
+                                                                     contenteditable="true"
+                                                                     spellcheck="false"
+                                                                     style="padding:0; font-weight:400;">
+                                                                    <span id="ReportSummary_Time">-</span>
+                                                                    <span id="ReportSummary_Loc">-</span><span>에서</span>
+
+                                                                    <span id="ReportSummary_Mag" style="display:inline-block; border-bottom: 1px solid #111; padding-bottom: 0px; line-height: 1.3;">
+                                                                    @* <span id="ReportSummary_Mag" style="text-decoration: underline; text-underline-offset: 2px;"> *@
+                                                                        -
+                                                                    </span>하였으며,
+                                                                    <span id="ReportSummary_SELFINT" style="display:inline-block; border-bottom: 1px solid #111; padding-bottom: 0px; line-height: 1.3;">
+                                                                    @* <span id="ReportSummary_SELFINT" style="text-decoration: underline; text-underline-offset: 2px;"> *@
+                                                                        DS 사업장에서의 흔들림 정도는 진도 Ⅰ 수준
+                                                                    </span><span>으로</span>
+                                                                </div>
+
+                                                                <!-- ✅ 2줄 박스 -->
+                                                               @*  <div class="editable-dash block"
+                                                                     id="ReportSummary_Line2"
+                                                                     contenteditable="true"
+                                                                     spellcheck="false"
+                                                                     style="padding:0; font-weight:400;">
+                                                                    <span id="ReportSummary_SELFINT" style="text-decoration: underline; text-underline-offset: 2px;">
+                                                                        DS 사업장에서의 흔들림 정도는 진도 Ⅰ 수준
+                                                                    </span><span>으로</span>
+                                                                </div> *@
+
+                                                                <!-- ✅ 3줄 박스 (기존 그대로) -->
+                                                                <div class="editable-dash block"
+                                                                     contenteditable="true"
+                                                                     spellcheck="false"
+                                                                     style="padding: 0; font-weight: 600;">
+                                                                    현재까지 인프라(화재/가스/케미컬) 시설 특이사항 없습니다.
+                                                                </div>
+
+                                                                <!-- 괄호 + 파란 설명(규모) -->
+                                                                <div style="line-height: 1">
+                                                                    <span style="color:#1d4ed8; font-size: 13px;">
+                                                                        * 규모 : 지진 발생지역의 에너지 크기  
+                                                                    </span>
+                                                                </div>
+                                                                <div style="line-height: 1">
+                                                                    <span style="color:#1d4ed8; font-size: 13px;">
+                                                                        ** 진도 : 현 위치의 흔들림을 나타내는 정도(1~12등급)
+                                                                    </span>
+                                                                </div>
+
+                                                                
+                                                    
+                                                            </div>
+                                                            <span class="bracket left" aria-hidden="true"></span>
+                                                            <span class="bracket right" aria-hidden="true"></span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- ✅ 1. 지진 상황(발생지) -->
+                                                    <div id="ReportSection1" style="margin: 24px 24px 0; color:#111; font-family: inherit;">
+
+                                                        <!-- 제목 -->
+                                                        <div style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">
+                                                            1. 지진 상황 (발생지)
+                                                        </div>
+
+                                                        <!-- 항목 리스트 -->
+                                                        <div style="font-size: 20px; line-height: 2.2;">
+
+                                                            <!-- 발생일시 -->
+                                                            <div style="display:flex; align-items:flex-start; gap:5px; margin-bottom: 4px; margin-left: 5px;">
+                                                                <span style="font-size: 16px; line-height: 1; margin-top: 10.5px;">☐</span>
+                                                                <div>
+                                                                    <span>발생일시</span>
+                                                                    <span style="margin: 0 6px;">:</span>
+                                                                    <span id="Content_EventTime">-</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- 발생규모 -->
+                                                            <div style="display:flex; align-items:flex-start; gap:5px; margin-bottom: 4px; margin-left: 5px;">
+                                                                <span style="font-size: 16px; line-height: 1; margin-top: 10.5px;">☐</span>
+                                                                <div>
+                                                                    <span>발생규모</span>
+                                                                    <span style="margin: 0 6px;">:</span>
+                                                                    <span id="Content_Mag">-</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- 발생위치 -->
+                                                            <div id="Content_Loc_Wrap"
+                                                                 style="display:flex; align-items:flex-start; gap:5px; margin-left: 5px;">
+                                                                <span style="font-size: 16px; line-height: 1; margin-top: 10.5px;">☐</span>
+                                                                <div>
+                                                                    <span>발생위치</span>
+                                                                    <span style="margin: 0 6px;">:</span>
+                                                                    <span id="Content_Loc">-</span>
+
+                                                                    <span id="Content_Distance"
+                                                                          style="color:#444; font-size: 12px; margin-left: 6px;">
+                                                                        (당사 거리 : -km / *화성사업장 기준)
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div style="padding: 0.8rem 1.7rem 0.8rem 3rem">
+                                                        <div id="GISImage" style="width: 100%; height: 500px;">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="ReportPage2">
+                                                    <!-- ✅ 2. 당사 지진 도달 수준 -->
+                                                    <div class="page-break"></div>  <!-- 여기서 무조건 다음 페이지 -->
+                                                    <section id="section2" class="avoid-break">
+
+
+                                                        <div id="ReportSection2" style="margin: 18px 24px 0; color:#111; font-family: inherit;">
+
+                                                            <!-- 제목 -->
+                                                            <div style="font-size: 20px; font-weight: 700; margin-bottom: 6px;">
+                                                                2. 당사 지진 도달 수준 <span style="font-size: 16px;">(발생지는 “규모”, 사업장은 “진도”로 표시)</span>
+                                                            </div>
+
+                                                            <!-- 설명 문구(하이픈) -->
+                                                            <div style="font-size: 16px; line-height: 1.7; margin-bottom: 10px; text-indent: 28px;">
+                                                                - 진도 : 현 위치에서 흔들림 정도, 사업장 지표계 측정값(gal)을 진도로 환산(1~12등급)
+                                                            </div>
+
+                                                            <!-- 표 -->
+                                                            <table style="
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 20px;
+    ">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th class="lineDelete" style="font-size: 18px; font-weight: 700 !important; border:1px solid #333; background:#e9e9e9; padding:10px 6px; width: 30%;">구분</th>
+                                                                        <th class="lineDelete" style="font-size: 18px; font-weight: 700 !important; border:1px solid #333; background:#e9e9e9; padding:10px 6px;">기흥/화성</th>
+                                                                        <th class="lineDelete" style="font-size: 18px; font-weight: 700 !important; border:1px solid #333; background:#e9e9e9; padding:10px 6px;">평택</th>
+                                                                        <th class="lineDelete" style="font-size: 18px; font-weight: 700 !important; border:1px solid #333; background:#e9e9e9; padding:10px 6px;">천안</th>
+                                                                        <th class="lineDelete" style="font-size: 18px; font-weight: 700 !important; border:1px solid #333; background:#e9e9e9; padding:10px 6px;">온양</th>
+                                                                        <th class="lineDelete" style="font-size: 18px; font-weight: 700 !important; border:1px solid #333; background:#e9e9e9; padding:10px 6px;">SCS</th>
+                                                                    </tr>
+                                                                </thead>
+
+                                                                <tbody>
+                                                                    <!-- 진도(gal) -->
+                                                                    <tr>
+                                                                        <td class="lineDelete" style="font-size: 18px; border:1px solid #333; padding:0; font-weight:700 !important;">진도<br />(gal<sup>*</sup>)</td>
+
+                                                                        <!-- 점선 박스 셀: 이미지 느낌 -->
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" style="padding: 0;" contenteditable="true" spellcheck="false" data-campus="HS">
+                                                                                진도 <span data-part="int">-</span><br />
+                                                                                (<span data-part="pga">-</span>)
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" style="padding: 0;" contenteditable="true" spellcheck="false" data-campus="PT">
+                                                                                진도 <span data-part="int">-</span><br />
+                                                                                (<span data-part="pga">-</span>)
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" style="padding: 0;" contenteditable="true" spellcheck="false" data-campus="CA">
+                                                                                진도 <span data-part="int">-</span><br />
+                                                                                (<span data-part="pga">-</span>)
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" style="padding: 0;" contenteditable="true" spellcheck="false" data-campus="OY">
+                                                                                진도 <span data-part="int">-</span><br />
+                                                                                (<span data-part="pga">-</span>)
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" style="padding: 0;" contenteditable="true" spellcheck="false" data-campus="SCS">
+                                                                                진도 <span data-part="int">-</span><br />
+                                                                                (<span data-part="pga">-</span>)
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    <!-- 발생지로 부터 거리(km) -->
+                                                                    <tr>
+                                                                        <td class="lineDelete" style="font-size: 18px; border:1px solid #333; padding:0; font-weight:700 !important;">발생지로 부터<br />거리(km)</td>
+
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="HS">
+                                                                                <span data-part="distance">-</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="PT">
+                                                                                <span data-part="distance">-</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="CA">
+                                                                                <span data-part="distance">-</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="OY">
+                                                                                <span data-part="distance">-</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="SCS">
+                                                                                <span data-part="distance">-</span>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    <!-- 측정 위치 -->
+                                                                    <tr>
+                                                                        <td class="lineDelete" style="font-size: 18px; border:1px solid #333; padding:0; font-weight:700 !important;">측정 위치</td>
+
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="HS">
+                                                                                <span data-part="position">-</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="PT">
+                                                                                <span data-part="position">-</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="CA">
+                                                                                <span data-part="position">-</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="OY">
+                                                                                <span data-part="position">-</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="border:1px solid #333; padding:0; text-align:center;">
+                                                                            <div class="editable-dash center" contenteditable="true" spellcheck="false" data-campus="SCS">
+                                                                                <span data-part="position">재이용동</span>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+
+                                                            <!-- 표 하단 주석 -->
+                                                            <div style="font-size: 16px; margin-top: 3px; line-height: 1.7; text-indent: 20px;">
+                                                                * gal : 지반의 움직임을 표현하는 가속도 값(cm/s²)
+                                                            </div>
+                                                            <div style="font-size: 16px; line-height: 1.7; text-indent: 65px;">
+                                                                - 평상시 수준 : 0.01~0.05gal (일상 진동) &nbsp;&nbsp;&nbsp;※ 별첨2) 수정 메르칼리 진도 계급 참조
+                                                            </div>
+                                                        </div>
+
+
+                                                        <!-- ✅ 3. 피해 상황 -->
+                                                        <div id="ReportSection3" style="margin: 22px 24px 0; color:#111;">
+                                                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">
+                                                                3. 피해 상황
+                                                            </div>
+
+                                                            <!-- 체크 + 점선 박스 문장 -->
+                                                            <div style="display:flex; align-items:flex-start; gap:6px; margin-bottom: 10px; font-size:14px;">
+                                                                <span style="font-size:16px; margin-top: 2.5px;">☐</span>
+                                                                <div class="editable-dash block"
+                                                                     contenteditable="true"
+                                                                     spellcheck="false"
+                                                                     style="flex:1; padding: 0">
+                                                                    현재까지 인프라(화재/가스/케미컬) 시설 특이사항 없음
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- 주석 문구 -->
+                                                            <div style="line-height: 1.8; margin-left: 26px; font-size: 18px;">
+                                                                * <span style="display:inline-block; border-bottom: 1px solid #111; padding-bottom: 0px; line-height: 1.3;">Photo 설비 영향이 있을 경우 Photo 기술팀에서 별도 보고 예정</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- ✅ 4. 대응 내역 -->
+                                                        <div id="ReportSection4" style="margin: 22px 24px 0; color:#111;">
+                                                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">
+                                                                4. 대응 내역 (방재센터)
+                                                            </div>
+
+                                                            <div class="editable-dash block"
+                                                                 contenteditable="true"
+                                                                 spellcheck="false"
+                                                                 style="padding: 0px 12px;">
+                                                                - GCS, FT, 전기CCR 등 인프라 설비 피해발생 내역 확인(피해 내역 없음)
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- ✅ - 이 상 - -->
+                                                        <div style="margin: 28px 24px 24px; color:#111;">
+                                                            <div style="text-align:right; font-size: 18px; letter-spacing: 8px;">
+                                                                - 이  상 -
+                                                            </div>
+                                                        </div>
+                                                    </section>
+                                                </div>
+                                               <div id="ReportPage3">
+                                                    <div id="ReportSection4" style="margin: 22px 24px 0; color:#111;">
+                                                        <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">
+                                                            [ 별첨1 ] 지진 용어 설명
+                                                        </div>
+                                                        <img src="/Admin/dist/img/EarthquakeExplain.png" style="width: 100%;">
+                                                    </div>
+
+                                                    <!-- ✅ [별첨2] 수정 메르칼리 진도 계급(MMI) -->
+                                                    <div id="ReportAppendix2" style="margin: 22px 24px 0; color:#111; font-family: inherit;">
+
+                                                        <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">
+                                                            [ 별첨2 ] 수정 메르칼리 진도 계급(MMI : Modified Mercalli Intensity Scale)
+                                                        </div>
+
+                                                        <table style="
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 18px;
+    ">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th style="width: 10%; background:#e9e9e9; border:1px solid #333; padding:10px 6px; text-align:center; font-weight: 700 !important; font-size: 16px;">
+                                                                        등급
+                                                                    </th>
+                                                                    <th style="width: 60%; background:#e9e9e9; border:1px solid #333; padding:10px 6px; text-align:center; font-weight: 700 !important; font-size: 16px;">
+                                                                        진도 등급별 현상
+                                                                    </th>
+                                                                    <th style="width: 30%; background:#e9e9e9; border:1px solid #333; padding:10px 6px; text-align:center; font-weight: 700 !important; font-size: 16px;">
+                                                                        gal(g)
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
+
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">1</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        대부분 사람들은 느낄 수 없으나, 지진계에는 기록된다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        gal &lt; 0.69<br>
+                                                                        (g &lt; 0.0007)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">2</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        조용한 상태나 건물 위층에 있는 소수의 사람만 느낀다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        0.7 ≤ gal &lt; 2.3<br>
+                                                                        (0.0007 ≤ g &lt; 0.0023)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">3</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        실내, 특히 건물 위층에 있는 사람이 현저하게 느끼며,<br>
+                                                                        정지하고 있는 차가 약간 흔들린다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        2.3 ≤ gal &lt; 7.5<br>
+                                                                        (0.0023 ≤ g &lt; 0.0076)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">4</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        실내에서 많은 사람이 느끼고, 밤에는 잠에서 깨기도 하며,<br>
+                                                                        그릇과 창문 등이 흔들린다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        7.5 ≤ gal &lt; 25.1<br>
+                                                                        (0.0076 ≤ g &lt; 0.0256)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">5</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        거의 모든 사람이 진동을 느끼고, 그릇, 창문 등이 깨지기도 하며,<br>
+                                                                        불안정한 물체는 넘어질 수 있다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        25.1 ≤ gal &lt; 67.3<br>
+                                                                        (0.0256 ≤ g &lt; 0.0686)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">6</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        모든 사람이 느끼고, 일부 무거운 가구가 움직이며,<br>
+                                                                        벽의 석회가 떨어지기도 한다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        67.3 ≤ gal &lt; 144.5<br>
+                                                                        (0.0686 ≤ g &lt; 0.1473)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">7</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        일반 건물에 약간의 피해가 발생하며,<br>
+                                                                        부실한 건물에는 상당한 피해가 발생한다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        144.5 ≤ gal &lt; 310.6<br>
+                                                                        (0.1473 ≤ g &lt; 0.317)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">8</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        일반 건물에 부분적 붕괴 등 상당한 피해가 발생하며, 부실한 건물에는<br>
+                                                                        심각한 피해가 발생한다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        310.6 ≤ gal &lt; 667.2<br>
+                                                                        (0.317 ≤ g &lt; 0.680)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">9</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        잘 설계된 건물에도 상당한 피해가 발생하며,<br>
+                                                                        일반 건축물에는 붕괴 등 큰 피해가 발생한다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        667.2 ≤ gal &lt; 1,433<br>
+                                                                        (0.680 ≤ g &lt; 1.461)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">10</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        대부분의 석조 및 골조 건물이 파괴되고,<br>
+                                                                        기차선로가 휘어진다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        1,433 ≤ gal &lt; 3,080<br>
+                                                                        (1.461 ≤ g &lt; 3.140)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">11</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        남아있는 구조물이 거의 없으며, 다리가 무너지고,<br>
+                                                                        기차선로가 심각하게 휘어진다.
+                                                                    </td>
+                                                                    <td rowspan="2" style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center; line-height:1.6;">
+                                                                        3,080 ≤ gal<br>
+                                                                        (3.140 ≤ g)
+                                                                    </td>
+                                                                </tr>
+
+                                                                <tr>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">12</td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 10px; text-align: left;">
+                                                                        모든 것이 피해를 입고, 지표면이 심각하게 뒤틀리며,<br>
+                                                                        물체가 공중으로 튀어 오른다.
+                                                                    </td>
+                                                                    <td style="font-size: 14px; border:1px solid #333; padding:0px 6px; text-align:center;">
+                                                                        <!-- 이미지에서도 12는 수치 구간이 비어있거나 동일한 경우가 있어 빈칸 유지 가능 -->
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                               </div>
+                                            </div>
+                     
+
+                           
+
+                                            
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <section>
+                    <div id="ViewBagEventID" data-eventid="@ViewBag.EventID"></div>
+                </section>
+            </div>
+        </div>
+    </form>
+    <div id="imgModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;justify-content:center;align-items:center;">
+        <img id="imgModalViewer" src="" style="max-width:95%;max-height:95%;border-radius:6px; box-shadow:0 0 20px rgba(0,0,0,0.6);">
+    </div>
+
+</body>
+</html>
