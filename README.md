@@ -1,73 +1,74 @@
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg" width="300"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Samsung_Logo.svg/2560px-Samsung_Logo.svg.png" width="320" alt="Samsung Electronics">
 </p>
 
-<h1 align="center">지진 데이터 통합 과제</h1>
-<h3 align="center">Earthquake Data Integration Project</h3>
+<h1 align="center">삼성 DS EQMS 지진 모니터링 시스템</h1>
+<h3 align="center">Samsung DS — EQMS Earthquake Monitoring System</h3>
 <p align="center">Developed by Mohammad Tanvir</p>
-<p align="center">Samsung DS — EQMS Earthquake Monitoring System</p>
+<p align="center">Samsung DS — EQMS Project</p>
+
+---
+
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow)
+![License](https://img.shields.io/badge/License-Proprietary-red)
+![Status](https://img.shields.io/badge/Status-Active-green)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-blue)
 
 ---
 
 ## 📌 Overview
 
-This project implements a **directional distance arrow visualization** inside the Samsung DS **EQMS (Earthquake Monitoring System)** interactive map. The arrow visually connects detected seismic epicenter coordinates to Samsung DS monitoring station locations, showing direction and distance in kilometers.
+This project implements a **directional distance arrow visualization** feature
+for the Samsung DS EQMS (Earthquake Monitoring System) interactive map interface.
 
-Built with **Leaflet.js** on an **ASP.NET Core MVC** backend.
-
----
-
-## ⚙️ Key Features
-
-- Directional Arrow Rendering — Red polyline + triangle arrowhead
-- Dynamic Arrow Scaling — prevents oversized arrowheads at long distances
-- Midpoint Distance Label — shows km distance at the line midpoint
-- Artifact-Free Geometry — no internal line segments inside arrowhead
-- Multi-zoom Stable — tested from 5km to 2,000km range
+The feature renders a directional red arrow and distance label between detected
+**earthquake epicenter coordinates** and **Samsung DS seismic monitoring station**
+locations, using **Leaflet.js** vector layers and precise pixel-space vector math.
 
 ---
 
-## 🗺️ Core Arrow Logic
-```javascript
-const latlngs = polyline.getLatLngs();
-const p1 = map.latLngToLayerPoint(latlngs[0]);
-const p2 = map.latLngToLayerPoint(latlngs[1]);
-const dx = p2.x - p1.x;
-const dy = p2.y - p1.y;
-const len = Math.sqrt(dx * dx + dy * dy);
-const ux = dx / len;
-const uy = dy / len;
+## 🗺️ Output Visualization
 
-const arrowLength = Math.min(len * 0.15, 40);
-const arrowWidth  = arrowLength * 0.5;
+<p align="center">
+  <img src="docs/output.png" width="600" alt="EQMS Arrow Visualization Output">
+</p>
 
-L.polygon([tip, left, right], {
-  color: 'transparent',
-  fillColor: '#D01B1B',
-  fillOpacity: 1
-}).addTo(map);
+> Directional red arrow from epicenter (경북 영양군 남쪽 12km, M2.6) to Samsung DS monitoring stations — distance label **195km** rendered at midpoint.
+
+---
+
+## 📁 Project Structure
+```
+samsung-ds-eqms/
+├── EventAnalysis_ReportForm.js      # Leaflet map controller — arrow visualization
+├── EventAnalysis_ReportForm.cshtml  # ASP.NET Core Razor view integration
+├── docs/
+│   ├── output.png                   # Final approved visualization screenshot
+│   └── 일일업무보고서_20260309_EQMS_화살표시각화.pdf
+└── README.md
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
+| Component | Detail |
 |---|---|
+| Language | JavaScript (ES6+) |
 | Map Library | Leaflet.js |
-| Language | JavaScript ES6+ |
-| Backend | ASP.NET Core MVC |
+| Rendering | HTML5 Canvas + SVG |
 | PDF Export | html2canvas + jsPDF |
+| Backend | ASP.NET Core MVC |
+| Dev Tools | Visual Studio + Chrome DevTools |
 
 ---
 
-## 📄 Daily Development Report
+## 📅 Development Log
 
-📥 [View Full Report — 2026-03-09](./일일업무보고서_20260309_EQMS_화살표시각화.pdf)
+| Date | Feature | Status |
+|---|---|---|
+| 2026-03-09 | Directional arrow visualization | ✅ Approved by 심근영 대리님 |
 
 ---
 
-## 👤 Developer
-
-**Mohammad Tanvir** —Software Engineering Team, Samsung DS EQMS Project  
-Mentor: 심근영 대리님 — Samsung DS
+*Samsung DS — EQMS Project · Confidential (대외비)*
